@@ -97,7 +97,10 @@ namespace MMTest
             mssql.BulkCopy("MODELRESULT", dt);
         }
 
-
+        /// <summary>
+        /// Get a databale that shows the initial bracket setup joined with game ids
+        /// </summary>
+        /// <returns></returns>
         public DataTable RetreiveTables()
         {
             

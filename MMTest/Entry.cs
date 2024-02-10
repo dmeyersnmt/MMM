@@ -22,10 +22,12 @@ namespace MMTest
             timer.Start();
             logger.Info($"Start at {startTime}");
             logger.Info($"Model iterations: {iterations}");
+            //Run the models
             Model model = new Model(iterations);
             timer.Stop();
             logger.Info($"Model runtime: {timer.Elapsed}");
             timer.Restart();
+            //Judge the models
             Judger judger = new Judger();
             logger.Info($"Judger runtime: {timer.Elapsed}");
             DateTime endTime =DateTime.Now;
