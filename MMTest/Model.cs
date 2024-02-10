@@ -17,7 +17,8 @@ namespace MMTest
         public Model(int iterations) 
         {
             mssql = new MSSQL("Server=localhost; Database=MMTEST; Integrated Security=True;");
-            int model_number = GetModelNumber();  
+            int model_number = GetModelNumber();
+            logger.Info($"Module Number start: {model_number}");
             for(int i=0;i<iterations;i++)
             {
                 logger.Debug($"Current model number:{model_number}");

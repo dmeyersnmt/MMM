@@ -16,19 +16,17 @@ namespace MMTest
         {
             mssql = new MSSQL("Server=localhost; Database=MMTEST; Integrated Security=True;");
             var dt_num = GetModelNumbers();
-            DataTable dt_modelresults = new DataTable();
-            dt_modelresults.Columns.Add("MODEL_ID", typeof(int));
-            dt_modelresults.Columns.Add("SCORE", typeof(int));
+            //DataTable dt_modelresults = new DataTable();
+            //dt_modelresults.Columns.Add("MODEL_ID", typeof(int));
+            //dt_modelresults.Columns.Add("SCORE", typeof(int));
             foreach(DataRow row in dt_num.Rows)
             {
                 int run_num = (int)row["MODEL_ID"];
                 var dt = GetResultsTable(run_num);
                 int score = CalculateScore(dt);
                 logger.Debug($"Total score for model {run_num}: {score}");
-                dt_modelresults.Rows.Add(new object[] {run_num, score});
-                //InsertModelResults(run_num, score);
+                InsertModelResults(run_num, score);
             }
-            InsertModelResultsBulk(dt_modelresults);
         }
 
 

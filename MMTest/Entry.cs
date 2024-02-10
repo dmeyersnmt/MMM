@@ -22,7 +22,7 @@ namespace MMTest
             timer.Start();
             logger.Info($"Start at {startTime}");
             logger.Info($"Model iterations: {iterations}");
-            //Model model = new Model(iterations);
+            Model model = new Model(iterations);
             timer.Stop();
             logger.Info($"Model runtime: {timer.Elapsed}");
             timer.Restart();
