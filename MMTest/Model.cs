@@ -14,12 +14,19 @@ namespace MMTest
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
         private MSSQL mssql;
+        private DataTable dt_seeds;
+        private DataTable dt_initial;
         public Model(int iterations) 
         {
             mssql = new MSSQL("Server=localhost; Database=MMTEST; Integrated Security=True;");
             int model_number = GetModelNumber();
             logger.Info($"Module Number start: {model_number}");
-            for(int i=0;i<iterations;i++)
+            //get the initial bracket setup
+            dt_initial = new DataTable();
+            dt_initial = RetreiveInitialBracketSetup();
+            //get the seeds
+            dt_seeds = RetreiveTeamSeeds();
+            for (int i=0;i<iterations;i++)
             {
                 logger.Debug($"Current model number:{model_number}");
                 InsertModelNumber(model_number);
@@ -66,14 +73,17 @@ namespace MMTest
         /// <param name="model_number"></param>
         public void StartModel(int model_number)
         {
-            DataTable dt = RetreiveTables();
+            DataTable dt = new DataTable();
+            dt.Clear();
+            dt = dt_initial.Copy();
             foreach(DataRow dr in dt.Rows)
             {
                 int game_id = (int)dr["GAME_ID"];
                 int opponent1 = (int)dr["OPPONENT1"];
                 int opponent2 = (int)dr["OPPONENT2"];
-                Decision decider = new Decision(opponent1, opponent2);
-                int winner = decider.SeedWeighted();
+                Decision decider = new Decision(opponent1, opponent2, dt_seeds);
+                //int winner = decider.SeedWeighted();
+                int winner = decider.SeedWeightedUpsetter();
                 logger.Trace($"Winner for GAME_ID:{game_id} = {winner}");
                 DataRow? winnerGame = dt.Select($"GAME_ID={game_id}").FirstOrDefault();
                 winnerGame["WINNER"] = winner;
@@ -98,10 +108,10 @@ namespace MMTest
         }
 
         /// <summary>
-        /// Get a databale that shows the initial bracket setup joined with game ids
+        /// Get a datatable that shows the initial bracket setup joined with game ids
         /// </summary>
         /// <returns></returns>
-        public DataTable RetreiveTables()
+        public DataTable RetreiveInitialBracketSetup()
         {
             
             string query = @"SELECT B.*, A.NEXT_GAME FROM 
@@ -111,6 +121,17 @@ namespace MMTest
                             ON A.GAME_ID = B.GAME_ID";
             DataTable dt = mssql.SelectedValues(query);
             logger.Trace($"Row count: {dt.Rows.Count}");
+            return dt;
+        }
+
+        /// <summary>
+        /// Get a datatable that contains the seeding for every time
+        /// </summary>
+        /// <returns></returns>
+        public DataTable RetreiveTeamSeeds()
+        {
+            string query = "SELECT TEAM_ID, SEED FROM TEAM";
+            DataTable dt = mssql.SelectedValues(query);
             return dt;
         }
     }

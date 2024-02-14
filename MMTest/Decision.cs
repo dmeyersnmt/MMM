@@ -13,8 +13,10 @@ namespace MMTest
         private MSSQL mssql;
         private int opponent1;
         private int opponent2;
-        public Decision(int opponent1, int opponent2)
+        private DataTable dt_seeds;
+        public Decision(int opponent1, int opponent2, DataTable dt_seeds)
         {
+            this.dt_seeds = dt_seeds;
             this.opponent1 = opponent1;
             this.opponent2 = opponent2;
             mssql = new MSSQL("Server=localhost; Database=MMTEST; Integrated Security=True;");
@@ -40,25 +42,65 @@ namespace MMTest
         /// <returns></returns>
         public int SeedWeighted()
         {
-            int seed1 = GetSeed(opponent1);
-            int seed2 = GetSeed(opponent2);
+            int seed1 = GetSeedDT(opponent1);
+            int seed2 = GetSeedDT(opponent2);
 
             int seed_total = seed1 + seed2;
-            double opponent1_weight = (double)1 -((double)seed1/(double)seed_total);
+            double opponent1_weight = (double)1 - ((double)seed1 / (double)seed_total);
             double opponent2_weight = (double)1 - ((double)seed2 / (double)seed_total);
-                
+
             Random random = new Random();
             double result = random.NextDouble();
 
-            if(opponent1_weight == opponent2_weight) 
+            if (opponent1_weight == opponent2_weight)
             {
                 return RandomDecider();
             }
             else
             {
-                if(opponent1_weight > result)
+                if (opponent1_weight > result)
                 {
                     return opponent1;
+                }
+                else
+                {
+                    return opponent2;
+                }
+
+            }
+        }
+
+        public int SeedWeightedUpsetter()
+        {
+            int seed1 = GetSeedDT(opponent1);
+            int seed2 = GetSeedDT(opponent2);
+
+            int seed_total = seed1 + seed2;
+            double opponent1_weight = (double)1 - ((double)seed1 / (double)seed_total);
+            double opponent2_weight = (double)1 - ((double)seed2 / (double)seed_total);
+
+            Random random = new Random();
+            double result = random.NextDouble();
+
+            if (opponent1_weight == opponent2_weight)
+            {
+                return RandomDecider();
+            }
+            else
+            {
+                if (opponent1_weight > result)
+                {
+                    Random upsetter = new Random();
+                    int upset = upsetter.Next(0, 10);
+                    if (upset < 2) 
+                    {
+                        return opponent2;
+                    }
+                    else
+                    {
+                        return opponent1;
+                    }
+                    
                 }
                 else
                 {
@@ -85,6 +127,12 @@ namespace MMTest
         }
 
 
+        public int GetSeedDT(int opponent)
+        {
+            DataRow? seed_row = dt_seeds.Select($"TEAM_ID={opponent}").FirstOrDefault();
+            int seed = Convert.ToInt32(seed_row["SEED"]);
+            return seed;
+        }
 
     }
 }

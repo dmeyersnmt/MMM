@@ -16,17 +16,20 @@ namespace MMTest
         {
             mssql = new MSSQL("Server=localhost; Database=MMTEST; Integrated Security=True;");
             var dt_num = GetModelNumbers();
-            //DataTable dt_modelresults = new DataTable();
-            //dt_modelresults.Columns.Add("MODEL_ID", typeof(int));
-            //dt_modelresults.Columns.Add("SCORE", typeof(int));
+            DataTable dt_modelresults = new DataTable();
+            dt_modelresults.Columns.Add("MODEL_ID", typeof(int));
+            dt_modelresults.Columns.Add("SCORE", typeof(int));
             foreach(DataRow row in dt_num.Rows)
             {
                 int run_num = (int)row["MODEL_ID"];
                 var dt = GetResultsTable(run_num);
                 int score = CalculateScore(dt);
                 logger.Debug($"Total score for model {run_num}: {score}");
-                InsertModelResults(run_num, score);
+                dt_modelresults.Rows.Add(new object[] { run_num, score });
+                //InsertModelResults(run_num, score);
             }
+            InsertModelResultsBulk(dt_modelresults);
+            MergeTempTable();
         }
 
 
@@ -59,13 +62,34 @@ namespace MMTest
             mssql.ExecuteNonQuery(query);
         }
 
-
+        /// <summary>
+        /// Bulk copy results into MODELSTEMP
+        /// </summary>
+        /// <param name="dt"></param>
         private void InsertModelResultsBulk(DataTable dt)
         {
-            logger.Debug("Bulk Inserting resulting scores into MODELS");
-            mssql.BulkCopyScores("MODELS", dt);
+            logger.Debug("Bulk Inserting resulting scores into MODELSTEMP");
+            mssql.BulkCopyScores("MODELSTEMP", dt);
 
         }
+
+        /// <summary>
+        /// Update MODELS with the values in MODELSTEMP
+        /// </summary>
+        private void MergeTempTable()
+        {
+            string query = @"
+                            UPDATE A
+                            SET SCORE = B.SCORE
+                            FROM MODELS A
+                            JOIN MODELSTEMP B
+                            ON A.MODEL_ID = B.MODEL_ID";
+            logger.Debug("Updated MODELS with MODELSTEMP");
+            mssql.ExecuteNonQuery(query);
+            logger.Debug("Delete MODELSTEMP");
+            mssql.ExecuteNonQuery("DELETE FROM MODELSTEMP");
+        }
+
 
         private int CalculateScore(DataTable dt)
         {

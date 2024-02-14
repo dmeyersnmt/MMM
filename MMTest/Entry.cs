@@ -16,7 +16,7 @@ namespace MMTest
         private static Logger logger = LogManager.GetCurrentClassLogger();
         public Entry()
         {
-            int iterations = 10000;
+            int iterations = 800000;
             DateTime startTime = DateTime.Now;
             var timer = new Stopwatch();
             timer.Start();
