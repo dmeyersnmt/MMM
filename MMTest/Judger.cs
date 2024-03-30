@@ -12,9 +12,9 @@ namespace MMTest
     {
         private MSSQL mssql { get; set; }
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        public Judger()
+        public Judger(string database)
         {
-            mssql = new MSSQL("Server=localhost; Database=MMTEST; Integrated Security=True;");
+            mssql = new MSSQL($"Server=localhost; Database={database}; Integrated Security=True;");
             var dt_num = GetModelNumbers();
             DataTable dt_modelresults = new DataTable();
             dt_modelresults.Columns.Add("MODEL_ID", typeof(int));
@@ -35,7 +35,7 @@ namespace MMTest
 
         private DataTable GetModelNumbers()
         {
-            string query = "SELECT * FROM MODELS WHERE SCORE IS NULL";
+            string query = "SELECT * FROM MODELS WHERE MODEL_ID < 100000";
             return mssql.SelectedValues(query);
         }
 
@@ -43,7 +43,7 @@ namespace MMTest
         private DataTable GetResultsTable(int run_num)
         {
             string query = @$"SELECT A.GAME_ID, A.RESULTWINNER, B.MODELWINNER, C.POINT FROM
-                            (SELECT GAME_ID, WINNER AS RESULTWINNER FROM RESULT) AS A
+                            (SELECT GAME_ID, WINNER AS RESULTWINNER FROM RESULT WHERE WINNER IS NOT NULL) AS A
                             INNER JOIN 
                             (SELECT GAME_ID, WINNER AS MODELWINNER FROM MODELRESULT WHERE RUN_ID = {run_num}) AS B 
                             ON A.GAME_ID = B.GAME_ID 
@@ -90,7 +90,12 @@ namespace MMTest
             mssql.ExecuteNonQuery("DELETE FROM MODELSTEMP");
         }
 
-
+        /// <summary>
+        /// Iterate through the rows and compare predicted winner and actual winner
+        /// Add points to the total based on the round  
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
         private int CalculateScore(DataTable dt)
         {
             int total_score = 0;

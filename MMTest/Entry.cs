@@ -16,21 +16,38 @@ namespace MMTest
         private static Logger logger = LogManager.GetCurrentClassLogger();
         public Entry()
         {
-            int iterations = 800000;
+            //RunModels();
+            //RunJudger();
+            JudgeTester judgeTester = new JudgeTester("MMTOURNAMENT");
+            JudgeTester judgeTester2 = new JudgeTester("MMPROD");
+
+        }
+
+
+        public void RunModels()
+        {
+            int iterations = 3000000;
             DateTime startTime = DateTime.Now;
             var timer = new Stopwatch();
             timer.Start();
             logger.Info($"Start at {startTime}");
             logger.Info($"Model iterations: {iterations}");
             //Run the models
-            Model model = new Model(iterations);
+            Model model = new Model("MMTOURNAMENT", iterations);
             timer.Stop();
             logger.Info($"Model runtime: {timer.Elapsed}");
-            timer.Restart();
-            //Judge the models
-            Judger judger = new Judger();
+        }
+
+        public void RunJudger()
+        {
+            //Jude the Models
+            DateTime startTime = DateTime.Now;
+            var timer = new Stopwatch();
+            timer.Start();
+            logger.Info($"Start at {startTime}");           
+            Judger judger = new Judger("MMTOURNAMENT");
             logger.Info($"Judger runtime: {timer.Elapsed}");
-            DateTime endTime =DateTime.Now;
+            DateTime endTime = DateTime.Now;
             logger.Info($"Finished at {endTime}");
         }
     }

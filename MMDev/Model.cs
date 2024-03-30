@@ -1,26 +1,25 @@
 ﻿using NLog;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Data;
-using System.Runtime.InteropServices;
+using MMTools;
 
-namespace MMTest
+namespace MMDev
 {
-    public class Model
+    internal class Model
     {
-
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        private MSSQL mssql;
+        private SQLTools.MSSQL mssql;
         private DataTable dt_seeds;
         private DataTable dt_initial;
         private string database;
-        public Model(string database, int iterations) 
+        public Model(string database, int iterations)
         {
             this.database = database;
-            mssql = new MSSQL($"Server=localhost; Database={database}; Integrated Security=True;");
+            mssql = new SQLTools.MSSQL($"Server=localhost; Database={database}; Integrated Security=True;");
             //get the model number
             int model_number = GetModelNumber();
             logger.Info($"Module Number start: {model_number} on database: {database}");
@@ -29,7 +28,7 @@ namespace MMTest
             dt_initial = RetreiveInitialBracketSetup();
             //get the seeds
             dt_seeds = RetreiveTeamSeeds();
-            for (int i=0;i<iterations;i++)
+            for (int i = 0; i < iterations; i++)
             {
                 logger.Debug($"Current model number:{model_number}");
                 InsertModelNumber(model_number);
@@ -37,7 +36,7 @@ namespace MMTest
                 model_number++;
             }
         }
-        
+
         /// <summary>
         /// Find the next available model number  
         /// </summary>
@@ -79,7 +78,7 @@ namespace MMTest
             DataTable dt = new DataTable();
             dt.Clear();
             dt = dt_initial.Copy();
-            foreach(DataRow dr in dt.Rows)
+            foreach (DataRow dr in dt.Rows)
             {
                 int game_id = (int)dr["GAME_ID"];
                 int opponent1 = (int)dr["OPPONENT1"];
@@ -120,7 +119,7 @@ namespace MMTest
         /// <returns></returns>
         public DataTable RetreiveInitialBracketSetup()
         {
-            
+
             string query = @"SELECT B.*, A.NEXT_GAME FROM 
                                 GAME AS A
                             INNER JOIN 

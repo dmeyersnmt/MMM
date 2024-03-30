@@ -54,6 +54,7 @@ namespace MMTest
                 try
                 {
                     SqlCommand command = new SqlCommand(query, conn);
+                    command.CommandTimeout = 600;
                     command.ExecuteNonQuery();
                 }
                 catch (SqlException ex)

@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Data;
-using System.Runtime.Intrinsics.X86;
+using MMTools;
 
-namespace MMTest
+namespace MMDev
 {
     internal class Decision
     {
         public int winner { get; set; }
-        private MSSQL mssql;
+        private SQLTools.MSSQL mssql;
         private int opponent1;
         private int opponent2;
         private DataTable dt_seeds;
@@ -20,7 +20,7 @@ namespace MMTest
             this.dt_seeds = dt_seeds;
             this.opponent1 = opponent1;
             this.opponent2 = opponent2;
-            mssql = new MSSQL($"Server=localhost; Database={database}; Integrated Security=True;");
+            mssql = new SQLTools.MSSQL($"Server=localhost; Database={database}; Integrated Security=True;");
         }
 
         public int RandomDecider()
@@ -183,9 +183,5 @@ namespace MMTest
             double rank = Convert.ToDouble(row["AVG_RANK"]);
             return rank;
         }
-
-
-            
-
     }
 }
