@@ -15,12 +15,12 @@ namespace MMDev
         private int opponent1;
         private int opponent2;
         private DataTable dt_seeds;
-        public Decision(string database, int opponent1, int opponent2, DataTable dt_seeds)
+        public Decision(int opponent1, int opponent2, DataTable dt_seeds, SQLTools.MSSQL mssql)
         {
             this.dt_seeds = dt_seeds;
             this.opponent1 = opponent1;
             this.opponent2 = opponent2;
-            mssql = new SQLTools.MSSQL($"Server=localhost; Database={database}; Integrated Security=True;");
+            this.mssql = mssql;
         }
 
         public int RandomDecider()
@@ -183,5 +183,8 @@ namespace MMDev
             double rank = Convert.ToDouble(row["AVG_RANK"]);
             return rank;
         }
+
+
+        
     }
 }

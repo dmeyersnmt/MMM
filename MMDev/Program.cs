@@ -2,6 +2,13 @@
 
 
 using MMDev;
+using MMTools;
 
 
-Entry _entry = new Entry();
+foreach (var settings in Settings.metric_names)
+{
+    Settings.metric_name = settings;
+    Entry _entry = new Entry();
+}
+
+CalculateScore calculateScore = new CalculateScore("MMDEV");

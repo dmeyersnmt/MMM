@@ -15,14 +15,15 @@ namespace MMDev
         private SQLTools.MSSQL mssql;
         private DataTable dt_seeds;
         private DataTable dt_initial;
-        private string database;
-        public Model(string database, int iterations)
+        
+        public Model(int iterations, SQLTools.MSSQL mssql)
         {
-            this.database = database;
-            mssql = new SQLTools.MSSQL($"Server=localhost; Database={database}; Integrated Security=True;");
+
+            this.mssql = mssql;
+            logger.Debug($"Connection string:{mssql.connection_string}");
             //get the model number
             int model_number = GetModelNumber();
-            logger.Info($"Module Number start: {model_number} on database: {database}");
+            logger.Info($"Module Number start: {model_number} on database:{mssql.database_name}");
             //get the initial bracket setup
             dt_initial = new DataTable();
             dt_initial = RetreiveInitialBracketSetup();
@@ -30,7 +31,7 @@ namespace MMDev
             dt_seeds = RetreiveTeamSeeds();
             for (int i = 0; i < iterations; i++)
             {
-                logger.Debug($"Current model number:{model_number}");
+                logger.Trace($"Current model number:{model_number}");
                 InsertModelNumber(model_number);
                 StartModel(model_number);
                 model_number++;
@@ -59,14 +60,32 @@ namespace MMDev
         }
 
         /// <summary>
+        /// Select the model_type_id from the table so that it can be added to the models table
+        /// TODO:maybe do this at the end?
+        /// </summary>
+        /// <returns></returns>
+        private int GetModelTypeID()
+        {
+            string query = $"SELECT MODEL_TYPE_ID FROM MODEL_TYPE WHERE MODEL_NAME = '{Settings.metric_name}'";
+            var dt = mssql.SelectedValues(query);
+            
+            int model_number = Convert.ToInt32(dt.Rows[0][0]);
+            
+            return model_number;
+        }
+
+
+      
+        /// <summary>
         /// Insert the model number into the MODELS table
         /// </summary>
         /// <param name="model_number"></param>
         private void InsertModelNumber(int model_number)
         {
-            string query = $"INSERT INTO MODELS (MODEL_ID) VALUES ({model_number})";
+            int mode_type_id = GetModelTypeID();
+            string query = $"INSERT INTO MODELS (MODEL_ID, MODEL_TYPE_ID, YEAR) VALUES ({model_number}, {mode_type_id}, {Settings.year_run})";
             mssql.ExecuteNonQuery(query);
-            logger.Trace($"Insert model number {model_number} into MODELS");
+            logger.Debug($"Insert model number {model_number} into MODELS");
         }
 
         /// <summary>
@@ -83,19 +102,16 @@ namespace MMDev
                 int game_id = (int)dr["GAME_ID"];
                 int opponent1 = (int)dr["OPPONENT1"];
                 int opponent2 = (int)dr["OPPONENT2"];
-                Decision decider = new Decision(database, opponent1, opponent2, dt_seeds);
-                //
-                //Find the winner of the game
-                //
-                //int winner = decider.SeedWeighted();
-                //int winner = decider.SeedWeightedUpsetter();
-                int winner = decider.RankWeighterUpsetter();
+                //Decision decider = new Decision(opponent1, opponent2, dt_seeds, mssql);
+                //int winner = decider.RankWeighterUpsetter();
+                
+                int winner = Rank.ReturnWinner(opponent1, opponent2, mssql);
                 logger.Trace($"Winner for GAME_ID:{game_id} = {winner}");
                 DataRow? winnerGame = dt.Select($"GAME_ID={game_id}").FirstOrDefault();
                 winnerGame["WINNER"] = winner;
 
                 //Set the opponents of the next game
-                if (game_id != 67)
+                if (game_id != 63)
                 {
                     int next_game = (int)dr["NEXT_GAME"];
                     DataRow? nextGame = dt.Select($"GAME_ID={next_game}").FirstOrDefault();
@@ -109,7 +125,7 @@ namespace MMDev
                     }
                 }
             }
-            dt.Columns["RUN_ID"].Expression = $"{model_number}";
+            dt.Columns["MODEL_ID"].Expression = $"{model_number}";
             mssql.BulkCopy("MODELRESULT", dt);
         }
 
