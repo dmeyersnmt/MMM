@@ -14,11 +14,24 @@ namespace MMTools
         public class MSSQL
         {
             private static Logger logger = LogManager.GetCurrentClassLogger();
-            string connectionString { get; set; }
+            public string server_name { get; set; }
+            public string database_name { get; set; }
+            public string connection_string { get; set; }
 
-            public MSSQL(string connectionString)
+            public MSSQL(ConnectionSettings connection_settings)
             {
-                this.connectionString = connectionString;
+                this.server_name = connection_settings.server_name;
+                this.database_name = connection_settings.database_name;
+                this.connection_string = connection_settings.connectionString.ToString();
+                //if (connection_settings.connectionString is not string)
+                //{
+                //    this.connectionString = $"Server={server_name}; Database={database_name}; Integrated Security=True;";
+                //}
+                //else
+                //{
+                //    this.connectionString = connection_settings.connectionString.ToString();
+                //}
+                
 
             }
 
@@ -27,7 +40,7 @@ namespace MMTools
             {
 
                 DataTable dt = new DataTable();
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(connection_string))
                 {
                     conn.Open();
                     try
@@ -49,7 +62,7 @@ namespace MMTools
 
             public void ExecuteNonQuery(string query)
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(connection_string))
                 {
                     conn.Open();
                     try
@@ -73,7 +86,7 @@ namespace MMTools
             {
                 try
                 {
-                    using (var copy = new SqlBulkCopy(connectionString))
+                    using (var copy = new SqlBulkCopy(connection_string))
                     {
                         copy.DestinationTableName = tableName;
                         copy.ColumnMappings.Add(1, 1);
@@ -94,7 +107,7 @@ namespace MMTools
             {
                 try
                 {
-                    using (var copy = new SqlBulkCopy(connectionString))
+                    using (var copy = new SqlBulkCopy(connection_string))
                     {
                         copy.DestinationTableName = tableName;
                         copy.ColumnMappings.Add(0, 0);
@@ -106,6 +119,28 @@ namespace MMTools
                 {
                     logger.Error(e.Message);
                 }
+            }
+        }
+        
+        public class ConnectionSettings
+        {
+            public string database_name;
+            public string server_name;
+            public string connectionString { get; set; } = string.Empty;
+
+            public ConnectionSettings(string database_name, string server_name, object connection_string)
+            {
+                this.database_name = database_name;
+                this.server_name = server_name;
+                if(connection_string is not null )
+                {
+                    this.connectionString = (string)connection_string;
+                }
+                else
+                {
+                    this.connectionString = $"Server={server_name}; Database={database_name}; Integrated Security=True;";
+                }
+                
             }
         }
     }
