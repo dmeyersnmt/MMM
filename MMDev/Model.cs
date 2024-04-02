@@ -63,7 +63,7 @@ namespace MMDev
         /// Select the model_type_id from the table so that it can be added to the models table
         /// TODO:maybe do this at the end?
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The int that corresponds with the model name</returns>
         private int GetModelTypeID()
         {
             string query = $"SELECT MODEL_TYPE_ID FROM MODEL_TYPE WHERE MODEL_NAME = '{Settings.metric_name}'";
@@ -111,6 +111,7 @@ namespace MMDev
                 winnerGame["WINNER"] = winner;
 
                 //Set the opponents of the next game
+                //as long as is it isn't the last game (63)
                 if (game_id != 63)
                 {
                     int next_game = (int)dr["NEXT_GAME"];
@@ -147,7 +148,8 @@ namespace MMDev
         }
 
         /// <summary>
-        /// Get a datatable that contains the seeding for every time
+        /// Get a datatable that contains the seeding for every team
+        /// We only need this if we utilize the seed method
         /// </summary>
         /// <returns></returns>
         public DataTable RetreiveTeamSeeds()

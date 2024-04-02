@@ -153,8 +153,6 @@ namespace MMDev
         }
 
 
-
-
         /// <summary>
         /// Get the seed from TEAM based on TEAM_ID 
         /// </summary>
@@ -184,7 +182,6 @@ namespace MMDev
             return rank;
         }
 
-
-        
+       
     }
 }

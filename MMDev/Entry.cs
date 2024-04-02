@@ -28,6 +28,9 @@ namespace MMDev
             RunModels();
         }
 
+        /// <summary>
+        /// Start to run the models based on the Settings class
+        /// </summary>
         public void RunModels()
         {
             int iterations = Settings.model_iterates;

@@ -14,10 +14,19 @@ namespace MMDev
 {
     public static class Rank
     {
-
+        /// <summary>
+        /// Figure out the winner of a game based on various rankings
+        /// </summary>
         private static Logger logger = LogManager.GetCurrentClassLogger();
         static bool use_upset = false;
 
+        /// <summary>
+        /// Random decider, basically a coin flip between the two opponents
+        /// used for when the rankings are similar
+        /// </summary>
+        /// <param name="opponent1"></param>
+        /// <param name="opponent2"></param>
+        /// <returns></returns>
         public static int RandomDecider(int opponent1, int opponent2)
         {
             Random random = new Random();
@@ -33,6 +42,13 @@ namespace MMDev
         }
 
 
+        /// <summary>
+        /// Find the winner based on the rank of each opponent
+        /// </summary>
+        /// <param name="opponent1"></param>
+        /// <param name="opponent2"></param>
+        /// <param name="mssql"></param>
+        /// <returns></returns>
         public static int ReturnWinner(int opponent1, int opponent2, SQLTools.MSSQL mssql)
         {
             Random random = new Random();
@@ -79,7 +95,12 @@ namespace MMDev
             }
         }
 
-
+        /// <summary>
+        /// Get the rank of the opponent 
+        /// </summary>
+        /// <param name="opponent"></param>
+        /// <param name="mssql"></param>
+        /// <returns></returns>
         private static double GetRankOfOpponent(int opponent, SQLTools.MSSQL mssql)
         {
             logger.Info($"Using the metric setting of: {Settings.metric_name}");
@@ -87,9 +108,5 @@ namespace MMDev
             DataTable dt = mssql.SelectedValues(query);
             return Convert.ToDouble(dt.Rows[0]["rank"]);
         }
-
-
-
-
     }
 }
